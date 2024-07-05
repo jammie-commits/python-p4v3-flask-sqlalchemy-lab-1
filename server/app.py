@@ -1,7 +1,7 @@
 # server/app.py
 #!/usr/bin/env python3
 
-from flask import Flask, make_response
+from flask import Flask, make_response, jsonify
 from flask_migrate import Migrate
 
 from models import db, Earthquake
@@ -38,6 +38,29 @@ def get_earthquake_by_id(id):
             'message': f'Earthquake {id} not found.'
         }
         return make_response(error_response, 404)
+    
+
+@app.route('/earthquakes/magnitude/<float:magnitude>')
+def get_earthquakes_by_magnitude(magnitude):
+    earthquakes = Earthquake.query.filter(Earthquake.magnitude >= magnitude).all()
+
+    count = len(earthquakes)
+
+    earthquake_data = []
+    for earthquake in earthquakes:
+        earthquake_dict = {
+            'id': earthquake.id,
+            'magnitude': earthquake.magnitude,
+            'location': earthquake.location,
+            'year': earthquake.year
+        }
+        earthquake_data.append(earthquake_dict)
+
+    response = {
+        'count': count,
+        'quakes': earthquake_data
+    }
+    return jsonify(response), 200
         
 
 
